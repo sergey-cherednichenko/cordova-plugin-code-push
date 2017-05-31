@@ -6,6 +6,7 @@ var Q = require("q");
 var runSequence = require("run-sequence");
 
 var sourcePath = "./www";
+var typingsPath = "./typings";
 var testPath = "./test";
 var binPath = "./bin";
 var tsFiles = "/**/*.ts";
@@ -29,6 +30,7 @@ var tsCompileOptions = {
     "noEmitOnError": true,
     "target": "ES5",
     "module": "commonjs",
+    "declaration": true,
     "sourceMap": false,
     "removeComments": true
 };
@@ -158,7 +160,7 @@ gulp.task("compile-test", function () {
         .pipe(gulp.dest(path.join(binPath, testPath)));
 });
 
-gulp.task("compile-src", function () {
+gulp.task("compile-src", ["copy-internal-typings"], function () {
     var ts = require("gulp-typescript");
     var insert = require("gulp-insert");
 
@@ -166,6 +168,14 @@ gulp.task("compile-src", function () {
         .pipe(ts(tsCompileOptions))
         .pipe(insert.prepend(compiledSourceWarningMessage))
         .pipe(gulp.dest(path.join(binPath, sourcePath)));
+});
+
+gulp.task("copy-internal-typings", function(){
+    var insert = require("gulp-insert");
+
+    gulp.src(path.join(typingsPath, "**", "*"))
+        .pipe(insert.prepend(compiledSourceWarningMessage.replace("WWW", "TYPINGS")))
+        .pipe(gulp.dest(path.join(binPath, typingsPath)));
 });
 
 gulp.task("tslint", function () {
